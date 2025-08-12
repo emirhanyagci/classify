@@ -5,6 +5,12 @@
   "references": [
     {
       "path": "./apps/web"
+    },
+    {
+      "path": "./libs/ui"
+    },
+    {
+      "path": "./libs/common"
     }
   ]
 }
