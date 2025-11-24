@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
+
   "compileOnSave": false,
   "files": [],
   "references": [
@@ -11,6 +12,12 @@
     },
     {
       "path": "./libs/common"
+    },
+    {
+      "path": "./apps/server"
+    },
+    {
+      "path": "./apps/server-e2e"
     }
   ]
 }
