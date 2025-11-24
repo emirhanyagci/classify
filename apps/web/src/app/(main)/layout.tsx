@@ -1,7 +1,7 @@
 "use client"
 import { AppShell, Burger, Group } from "@mantine/core";
 import { useDisclosure, useLocalStorage } from '@mantine/hooks';
-import { Header, Nav } from "@classify/ui"
+import { AvatarMenu, Nav } from "@classify/ui"
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const [opened, { toggle }] = useDisclosure();
     const [openedLS, setOpenedLS] = useLocalStorage({
@@ -23,7 +23,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="md" />
                     <Burger opened={false} onClick={toggleHandler} size="sm" visibleFrom="md" />
                 </div>
-                <Header />
+                <AvatarMenu />
 
             </Group>
         </AppShell.Header>
