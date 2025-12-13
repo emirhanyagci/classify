@@ -86,11 +86,25 @@
     "@apollo/server": "^4.12.2",
     "@as-integrations/express5": "^1.1.2",
     "@nestjs/apollo": "^13.2.0",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/graphql": "^13.2.0",
+    "@nestjs/jwt": "^11.0.1",
+    "@nestjs/passport": "^11.0.5",
+    "@types/cookie-parser": "^1.4.10",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "cookie-parser": "^1.4.7",
     "graphql": "^16.11.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
     "@types/pg": "^8.15.5",
     "node-pg-migrate": "^8.0.3"
   }
