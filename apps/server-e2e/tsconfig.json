@@ -4,7 +4,8 @@
     "outDir": "out-tsc/@classify/server-e2e",
     "esModuleInterop": true,
     "noUnusedLocals": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": ["node"]
   },
   "include": ["jest.config.ts", "src/**/*.ts"],
   "references": []
