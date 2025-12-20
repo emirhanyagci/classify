@@ -1,5 +1,5 @@
 "use client"
-import { Button, Chip } from '@mantine/core';
+import { Button } from '@mantine/core';
 import styled from 'styled-components';
 
 const V2 = styled.div`

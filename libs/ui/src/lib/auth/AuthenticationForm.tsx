@@ -15,6 +15,7 @@ import {
 import { useForm } from '@mantine/form';
 import { upperFirst, useToggle } from '@mantine/hooks';
 import { GoogleButton } from '../icons/GoogleButton';
+import { AxiosResponse } from 'axios';
 import styled from 'styled-components';
 const Container = styled.div`
         max-width: 90%;
@@ -22,7 +23,13 @@ const Container = styled.div`
         margin: 0 auto;
         margin-top: 100px;
 `;
-export function AuthenticationForm(props: PaperProps) {
+
+interface AuthenticationFormProps extends PaperProps {
+    onLogin: (payload: { email: string; password: string }) => Promise<AxiosResponse>;
+    onRegister: (payload: { name: string; email: string; password: string }) => Promise<AxiosResponse>;
+}
+
+export function AuthenticationForm({ onLogin, onRegister, ...props }: AuthenticationFormProps) {
     const [type, toggle] = useToggle(['login', 'register']);
     const form = useForm({
         initialValues: {
@@ -37,7 +44,19 @@ export function AuthenticationForm(props: PaperProps) {
             password: (val) => (val.length <= 6 ? 'Password should include at least 6 characters' : null),
         },
     });
+    async function onSubmitHandler(values: typeof form.values) {
+        if (type === 'login') {
+            const res = await onLogin({ email: values.email, password: values.password });
 
+
+        } else {
+            const res = await onRegister({ name: values.name, email: values.email, password: values.password });
+            if (res.status === 201) {
+                toggle("login")
+            }
+
+        }
+    }
     return (
         <Container>
             <Paper radius="md" p="lg" withBorder {...props}>
@@ -51,15 +70,14 @@ export function AuthenticationForm(props: PaperProps) {
 
                 <Divider label="Or continue with email" labelPosition="center" my="lg" />
 
-                <form onSubmit={form.onSubmit(() => { })}>
+                <form onSubmit={form.onSubmit(onSubmitHandler)}>
                     <Stack>
                         {type === 'register' && (
                             <TextInput
                                 label="Name"
                                 placeholder="Your name"
-                                value={form.values.name}
-                                onChange={(event) => form.setFieldValue('name', event.currentTarget.value)}
                                 radius="md"
+                                {...form.getInputProps('name')}
                             />
                         )}
 
@@ -67,27 +85,22 @@ export function AuthenticationForm(props: PaperProps) {
                             required
                             label="Email"
                             placeholder="hello@mantine.dev"
-                            value={form.values.email}
-                            onChange={(event) => form.setFieldValue('email', event.currentTarget.value)}
-                            error={form.errors.email && 'Invalid email'}
                             radius="md"
+                            {...form.getInputProps('email')}
                         />
 
                         <PasswordInput
                             required
                             label="Password"
                             placeholder="Your password"
-                            value={form.values.password}
-                            onChange={(event) => form.setFieldValue('password', event.currentTarget.value)}
-                            error={form.errors.password && 'Password should include at least 6 characters'}
                             radius="md"
+                            {...form.getInputProps('password')}
                         />
 
                         {type === 'register' && (
                             <Checkbox
                                 label="I accept terms and conditions"
-                                checked={form.values.terms}
-                                onChange={(event) => form.setFieldValue('terms', event.currentTarget.checked)}
+                                {...form.getInputProps('terms', { type: 'checkbox' })}
                             />
                         )}
                     </Stack>
