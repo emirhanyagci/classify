@@ -9,14 +9,8 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.sql(`
-        CREATE TABLE users (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(100) NOT NULL,
-          email VARCHAR(150) UNIQUE NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW()
-        );
-        
+    pgm.sql(`
+        ALTER COLUMN password RENAME TO password_hash;
       `);
 };
 
@@ -26,9 +20,7 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.sql(`
-        DROP TABLE users;
+    pgm.sql(`
+        ALTER COLUMN password_hash RENAME TO password;
     `)
 };
-
-
