@@ -10,7 +10,7 @@ exports.shorthands = undefined;
  */
 exports.up = (pgm) => {
     pgm.sql(`
-        ALTER TABLE users RENAME COLUMN password TO password_hash;
+        
       `);
 };
 
@@ -21,6 +21,6 @@ exports.up = (pgm) => {
  */
 exports.down = (pgm) => {
     pgm.sql(`
-        ALTER TABLE users RENAME COLUMN password_hash TO password;
+        
     `)
 };

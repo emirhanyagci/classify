@@ -10,7 +10,7 @@ exports.shorthands = undefined;
  */
 exports.up = (pgm) => {
     pgm.sql(`
-        ALTER TABLE users RENAME COLUMN password TO password_hash;
+        ALTER TABLE classes ADD COLUMN owner_id INTEGER NOT NULL REFERENCES users(id);
       `);
 };
 
@@ -21,6 +21,6 @@ exports.up = (pgm) => {
  */
 exports.down = (pgm) => {
     pgm.sql(`
-        ALTER TABLE users RENAME COLUMN password_hash TO password;
+        ALTER TABLE classes DROP COLUMN owner_id;
     `)
 };

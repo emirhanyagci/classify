@@ -23,3 +23,5 @@ import { Pool } from 'pg';
 
 })
 export class DbModule { }
+
+// TODO : you can convert this variables to environment variables

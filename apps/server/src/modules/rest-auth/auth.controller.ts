@@ -3,10 +3,11 @@ import type { Request, Response } from 'express';
 import { AuthService } from "./auth.service";
 import { LoginDto, RegisterDto } from "./dto/auth.dto";
 import { AuthGuard } from "@nestjs/passport";
+import { UserService } from "../user/user.service";
 
 @Controller("auth")
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(private readonly authService: AuthService, private readonly userService: UserService) { }
 
     @UseGuards(AuthGuard('local'))
     @Post('login')
@@ -16,9 +17,10 @@ export class AuthController {
         @Res({ passthrough: true }) res: Response
     ) {
         const { accessToken, refreshToken } = await this.authService.login(req.user);
+        const user = await this.userService.findById(req.user.id);
 
         res.cookie('Refresh', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' ? true : false, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
-        return { accessToken }
+        return { accessToken, ...user }
     }
 
     // 2. REGISTER ROUTE
@@ -32,9 +34,8 @@ export class AuthController {
     @Post('refresh')
     async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
 
-
         const { accessToken, refreshToken } = await this.authService.login(req.user);
         res.cookie('Refresh', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' ? true : false, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
-        return { accessToken }
+        return { accessToken, ...req.user }
     }
 }

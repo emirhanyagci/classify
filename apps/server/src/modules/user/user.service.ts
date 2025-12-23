@@ -1,7 +1,6 @@
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Pool } from "pg";
 import * as bcrypt from 'bcrypt';
-import { User } from "@classify/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 @Injectable()
 export class UserService {
@@ -11,7 +10,7 @@ export class UserService {
     async validateUser(email: string, password: string) {
         const user = await this.findByEmail(email);
 
-        if (user && await bcrypt.compare(password, user.password)) {
+        if (user && await bcrypt.compare(password, user.password_hash)) {
             return user;
         }
 
@@ -32,7 +31,7 @@ export class UserService {
         return result.rows[0];
     }
     async findById(id: number) {
-        const result = await this.pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        const result = await this.pool.query('SELECT id, name, email FROM users WHERE id = $1', [id]);
         return result.rows[0];
     }
 }
