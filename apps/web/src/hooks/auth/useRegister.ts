@@ -1,15 +1,36 @@
+"use client";
 import { register } from "@/services/auth.service";
-import { useMutation } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
+import { useState } from "react";
 
 export function useRegister() {
-    return useMutation<AxiosResponse, unknown, { name: string; email: string; password: string }>({
-        mutationFn: ({ name, email, password }) => register(name, email, password),
-        onSuccess: (data) => {
-            console.log(data);
-        },
-        onError: (error) => {
-            console.log(error);
-        },
-    });
+    const [error, setError] = useState<Error | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const registerMutation = async (
+        name: string,
+        email: string,
+        password: string
+    ) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await register(name, email, password);
+            console.log(response);
+            return response;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error("Registration failed");
+            setError(error);
+            console.error(error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return {
+        register: registerMutation,
+        isLoading,
+        error,
+    };
 }

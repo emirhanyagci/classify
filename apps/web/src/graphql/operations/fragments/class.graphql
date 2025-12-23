@@ -1,0 +1,10 @@
+# Reusable fragments for Class type
+
+fragment ClassFields on Class {
+  id
+  name
+  description
+  createdAt
+  ownerId
+}
+

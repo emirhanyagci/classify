@@ -1,13 +1,23 @@
-"use client"
+"use client";
 import { AuthenticationForm } from "@classify/ui";
 import { useLogin } from "@/hooks/auth/useLogin";
 import { useRegister } from "@/hooks/auth/useRegister";
 
 export default function Login() {
-    const { mutateAsync: login } = useLogin();
-    const { mutateAsync: register } = useRegister();
+  const { login } = useLogin();
+  const { register } = useRegister();
 
-    return (
-        <AuthenticationForm onLogin={login} onRegister={register} />
-    );
+  const handleLogin = async (payload: { email: string; password: string }) => {
+    return await login(payload.email, payload.password);
+  };
+
+  const handleRegister = async (payload: {
+    name: string;
+    email: string;
+    password: string;
+  }) => {
+    return await register(payload.name, payload.email, payload.password);
+  };
+
+  return <AuthenticationForm onLogin={handleLogin} onRegister={handleRegister} />;
 }

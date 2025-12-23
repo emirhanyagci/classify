@@ -1,0 +1,31 @@
+# Queries for Classes
+
+query GetClasses {
+  classes {
+    id
+    name
+    description
+    createdAt
+    ownerId
+  }
+}
+
+query GetMyClasses {
+  myClasses {
+    id
+    name
+    description
+    createdAt
+    ownerId
+  }
+}
+
+query GetClass($id: Int!) {
+  class(id: $id) {
+    id
+    name
+    description
+    createdAt
+    ownerId
+  }
+}

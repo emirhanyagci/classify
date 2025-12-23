@@ -1,0 +1,4 @@
+# This folder contains auto-generated GraphQL types and hooks
+# Do not edit files in this folder manually!
+# Run `yarn codegen` (or your codegen script) to regenerate
+

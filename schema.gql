@@ -1,0 +1,39 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Class {
+  createdAt: DateTime!
+  description: String!
+  id: ID!
+  name: String!
+  ownerId: Float!
+}
+
+input CreateClassInput {
+  description: String!
+  name: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createClass(input: CreateClassInput!): Class!
+  deleteClass(id: Int!): Boolean!
+  updateClass(input: UpdateClassInput!): Class!
+}
+
+type Query {
+  class(id: Int!): Class!
+  classes: [Class!]!
+  myClasses: [Class!]!
+}
+
+input UpdateClassInput {
+  description: String
+  id: ID!
+  name: String
+}

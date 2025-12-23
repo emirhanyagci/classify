@@ -45,10 +45,10 @@ export function AuthenticationForm({ onLogin, onRegister, ...props }: Authentica
         },
     });
     async function onSubmitHandler(values: typeof form.values) {
+        console.log(type);
+
         if (type === 'login') {
             const res = await onLogin({ email: values.email, password: values.password });
-
-
         } else {
             const res = await onRegister({ name: values.name, email: values.email, password: values.password });
             if (res.status === 201) {

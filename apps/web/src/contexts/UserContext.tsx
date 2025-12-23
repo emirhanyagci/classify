@@ -1,16 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
+import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import { User } from '@classify/common';
+import { refreshAccessToken } from '@/services/auth.service';
+import { setAccessTokenGetter } from '@/lib/apollo-client';
 
 // Allow partial user fields so we can store tokens before full profile is loaded.
-type AuthUser = Partial<User> & { access_token?: string };
+type AuthUser = Partial<User>;
 
 interface UserContextType {
   user: AuthUser | null;
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
-  setUser: Dispatch<SetStateAction<AuthUser | null>>;
+  setUser: (user: AuthUser) => void;
+  setAccessToken: (accessToken: string) => void;
   logout: () => void;
 }
 
@@ -18,45 +21,37 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const userRef = useRef<AuthUser | null>(null);
 
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
-  //   try {
-  //     setLoading(true);
-  //     // TODO: Replace with actual API endpoint
-  //     const response = await fetch('/api/auth/login', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ email, password }),
-  //     });
+  useEffect(() => {
+    setAccessTokenGetter(() => userRef.current?.accessToken ?? null);
+  }, []);
 
-  //     if (!response.ok) {
-  //       throw new Error('Login failed');
-  //     }
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const response = await refreshAccessToken();
+        const { accessToken, ...userData } = response.data;
+        setUser((prev) => ({ ...(prev ?? {}), accessToken, ...userData }));
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //     const data = await response.json();
-  //     // Store token if provided
-  //     if (data.access_token) {
-  //       localStorage.setItem('access_token', data.access_token);
-  //     }
-  //     if (data.refresh_token) {
-  //       localStorage.setItem('refresh_token', data.refresh_token);
-  //     }
+    initAuth();
+  }, []);
 
-  //     // Fetch user data after successful login
-  //     await fetchUser();
-  //   } catch (error) {
-  //     console.error('Login error:', error);
-  //     throw error;
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+  const setAccessToken = (accessToken: string) => {
+    setUser((prev) => ({ ...(prev ?? {}), accessToken }))
+  }
   const logout = () => {
-    localStorage.removeItem('access_token');
     setUser(null);
   };
 
@@ -70,6 +65,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         loading,
         setLoading,
         setUser,
+        setAccessToken,
         logout,
       }}
     >

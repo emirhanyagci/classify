@@ -1,0 +1,26 @@
+# Mutations for Classes
+
+mutation CreateClass($input: CreateClassInput!) {
+  createClass(input: $input) {
+    id
+    name
+    description
+    createdAt
+    ownerId
+  }
+}
+
+mutation UpdateClass($input: UpdateClassInput!) {
+  updateClass(input: $input) {
+    id
+    name
+    description
+    createdAt
+    ownerId
+  }
+}
+
+mutation DeleteClass($id: Int!) {
+  deleteClass(id: $id)
+}
+

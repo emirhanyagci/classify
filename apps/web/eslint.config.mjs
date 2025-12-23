@@ -25,7 +25,7 @@ const config = [
     },
   },
   {
-    ignores: ['.next/**/*'],
+    ignores: ['.next/**/*', 'src/graphql/generated/**/*'],
   },
 ];
 

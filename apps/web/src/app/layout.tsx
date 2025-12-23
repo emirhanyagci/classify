@@ -1,19 +1,22 @@
-"use client"
-import '@mantine/core/styles.css';
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps, createTheme } from '@mantine/core';
-import { Providers } from '../contexts/Providers';
+"use client";
+import "@mantine/core/styles.css";
 import {
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { queryClient } from '@/lib/query-client';
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
+  createTheme,
+} from "@mantine/core";
+import { Providers } from "../contexts/Providers";
+import { useEffect } from "react";
 
-const theme = createTheme({})
+const theme = createTheme({});
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
 
   return (
     <html lang="en" {...mantineHtmlProps}>
@@ -21,15 +24,11 @@ export default function RootLayout({
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
+        <Providers>
           <MantineProvider theme={theme} defaultColorScheme="light">
-            <Providers>
-              {children}
-            </Providers>
+            {children}
           </MantineProvider>
-          <ReactQueryDevtools />
-        </QueryClientProvider>
-
+        </Providers>
       </body>
     </html>
   );

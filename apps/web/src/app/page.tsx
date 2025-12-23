@@ -13,7 +13,6 @@ export default function Index() {
    */
   return (
     <div>
-      <V2>Temp index </V2>
-      <Button >Awesome chip</Button>    </div>
+      home  </div>
   );
 }

@@ -14,3 +14,7 @@ export function register(name: string, email: string, password: string) {
         password,
     });
 }
+
+export function refreshAccessToken() {
+    return axiosInstance.post<{ accessToken: string }>('/auth/refresh');
+}
