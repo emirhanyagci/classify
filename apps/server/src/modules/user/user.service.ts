@@ -1,7 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Pool } from "pg";
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserInput, UpdateUserInput } from "./dto/user.input";
 @Injectable()
 export class UserService {
     constructor(
@@ -16,9 +16,9 @@ export class UserService {
 
         throw new UnauthorizedException('Invalid credentials');
     }
-    async createUser(user: CreateUserDto) {
+    async createUser(user: CreateUserInput) {
         const hashedPassword = await bcrypt.hash(user.password, 10);
-        const result = await this.pool.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', [user.name, user.email, hashedPassword]);
+        const result = await this.pool.query('INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *', [user.name, user.email, hashedPassword]);
         return result.rows[0];
     }
     async getUsers() {
@@ -32,6 +32,45 @@ export class UserService {
     }
     async findById(id: number) {
         const result = await this.pool.query('SELECT id, name, email FROM users WHERE id = $1', [id]);
+        return result.rows[0];
+    }
+    async updateUser(id: number, input: UpdateUserInput) {
+        const updates: string[] = [];
+        const values: (string | number)[] = [];
+        let paramIndex = 1;
+
+        if (input.name !== undefined) {
+            updates.push(`name = $${paramIndex++}`);
+            values.push(input.name);
+        }
+
+        if (input.email !== undefined) {
+            updates.push(`email = $${paramIndex++}`);
+            values.push(input.email);
+        }
+
+        if (input.password !== undefined) {
+            const hashedPassword = await bcrypt.hash(input.password, 10);
+            updates.push(`password = $${paramIndex++}`);
+            values.push(hashedPassword);
+        }
+
+        if (input.imageUrl !== undefined) {
+            updates.push(`image_url = $${paramIndex++}`);
+            values.push(input.imageUrl);
+        }
+
+        if (updates.length === 0) {
+            return this.findById(id);
+        }
+
+        values.push(id);
+
+        const result = await this.pool.query(
+            `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING id, name, email, image_url as "imageUrl"`,
+            values
+        );
+
         return result.rows[0];
     }
 }

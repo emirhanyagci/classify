@@ -7,9 +7,11 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/rest-auth/auth.module';
 import { ClassesModule } from './modules/classes/classes.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     AuthModule,
+    UserModule,
     ClassesModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
