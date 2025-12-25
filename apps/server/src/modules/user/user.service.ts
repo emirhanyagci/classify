@@ -2,10 +2,12 @@ import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Pool } from "pg";
 import * as bcrypt from 'bcrypt';
 import { CreateUserInput, UpdateUserInput } from "./dto/user.input";
+import { AwsS3Service } from "../aws/aws-s3.service";
 @Injectable()
 export class UserService {
     constructor(
         @Inject("PG_POOL") private readonly pool: Pool,
+        private readonly awsS3Service: AwsS3Service,
     ) { }
     async validateUser(email: string, password: string) {
         const user = await this.findByEmail(email);
@@ -31,9 +33,22 @@ export class UserService {
         return result.rows[0];
     }
     async findById(id: number) {
-        const result = await this.pool.query('SELECT id, name, email FROM users WHERE id = $1', [id]);
+        const result = await this.pool.query('SELECT id, name, email, image_url as "imageUrl",created_at as "createdAt" FROM users WHERE id = $1', [id]);
         return result.rows[0];
     }
+
+    async getUser(id: number) {
+        const user = await this.findById(id);
+        if (!user) return null;
+
+        return {
+            ...user,
+            imageUrl: user.imageUrl
+                ? await this.awsS3Service.getSignedImageUrl(user.imageUrl)
+                : null,
+        };
+    }
+
     async updateUser(id: number, input: UpdateUserInput) {
         const updates: string[] = [];
         const values: (string | number)[] = [];
@@ -72,5 +87,24 @@ export class UserService {
         );
 
         return result.rows[0];
+    }
+    async uploadAvatar(userId: number, file: Express.Multer.File) {
+        const currentUser = await this.findById(userId);
+        console.log(currentUser);
+
+        const oldAvatarKey = currentUser?.imageUrl;
+
+        const key = this.awsS3Service.generateKey('avatars', file.originalname);
+        const uploadResult = await this.awsS3Service.uploadFile(
+            file.buffer,
+            key,
+            file.mimetype,
+        );
+        await this.updateUser(userId, { imageUrl: uploadResult.key });
+
+        if (oldAvatarKey && oldAvatarKey.startsWith('avatars/')) {
+            await this.awsS3Service.deleteFile(oldAvatarKey);
+        }
+        return { imageUrl: uploadResult.url };
     }
 }

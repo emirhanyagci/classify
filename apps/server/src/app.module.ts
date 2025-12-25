@@ -8,14 +8,17 @@ import { AuthModule } from './modules/rest-auth/auth.module';
 import { ClassesModule } from './modules/classes/classes.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { UserModule } from './modules/user/user.module';
+import { AwsModule } from './modules/aws/aws.module';
+
 @Module({
   imports: [
     AuthModule,
     UserModule,
     ClassesModule,
+    AwsModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(__dirname, 'schema.gql'),
+      autoSchemaFile: join(process.cwd(), 'schema.gql'),
       sortSchema: true,
       playground: false,
       plugins: [

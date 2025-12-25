@@ -1,18 +1,21 @@
 import { Global, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
+
 @Global()
 @Module({
     controllers: [],
     providers: [
         {
             provide: "PG_POOL",
-            useFactory: () => {
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
                 return new Pool({
-                    host: 'localhost',
-                    port: 5432,
-                    database: 'app',
-                    user: 'app',
-                    password: 'app',
+                    host: configService.get<string>('DB_HOST', 'localhost'),
+                    port: configService.get<number>('DB_PORT', 5432),
+                    database: configService.get<string>('DB_NAME', 'app'),
+                    user: configService.get<string>('DB_USER', 'app'),
+                    password: configService.get<string>('DB_PASSWORD', 'app'),
                 })
             }
         }
@@ -20,8 +23,5 @@ import { Pool } from 'pg';
     exports: [
         "PG_POOL",
     ]
-
 })
 export class DbModule { }
-
-// TODO : you can convert this variables to environment variables
