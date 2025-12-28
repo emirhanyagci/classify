@@ -5,6 +5,7 @@ import { Avatar, Button, FileInput, Flex, Modal, Slider, Stack, Text, Group } fr
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useState, useCallback } from "react";
 import Cropper, { Area } from "react-easy-crop";
+import { uploadAvatar } from "@/services/user.service";
 
 interface ChangeAvatarProps {
     opened: boolean;
@@ -62,7 +63,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
 }
 
 export default function ChangeAvatar({ opened, open, close }: ChangeAvatarProps) {
-    const { user } = useUser();
+    const { user, setImageUrl } = useUser();
 
     // State for image handling
     const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -134,18 +135,8 @@ export default function ChangeAvatar({ opened, open, close }: ChangeAvatarProps)
     const handleSave = async () => {
         if (croppedBlob) {
             try {
-                console.log(croppedBlob);
-
-                const formData = new FormData();
-                formData.append('avatar', croppedBlob, 'avatar.jpg');
-
-                // TODO: Backend'e gönder
-                // await axios.post('/api/user/avatar', formData);
-
-                console.log("Blob ready for upload:", croppedBlob);
-                console.log("Size:", croppedBlob.size, "bytes");
-                console.log("Type:", croppedBlob.type);
-
+                const response = await uploadAvatar(croppedBlob);
+                setImageUrl(response.data.imageUrl);
                 handleClose();
             } catch (error) {
                 console.error("Error saving avatar:", error);

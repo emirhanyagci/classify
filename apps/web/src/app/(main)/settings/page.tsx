@@ -7,6 +7,8 @@ import { useDisclosure } from "@mantine/hooks";
 
 export default function SettingsPage() {
     const { user } = useUser();
+    console.log(user);
+
     const [opened, { open, close }] = useDisclosure(false);
     return (
         <>
@@ -24,6 +26,7 @@ export default function SettingsPage() {
                                 radius="xl"
                                 color="blue"
                                 mb="sm"
+                                src={user?.imageUrl}
                             >
                                 {user?.email?.charAt(0).toUpperCase()}
                             </Avatar>
