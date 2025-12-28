@@ -1,9 +1,10 @@
 
 export interface User {
-    id: number;
+    id: string;
     name: string;
     email: string;
     accessToken?: string;
+    imageUrl?: string;
     created_at?: Date;
 }
 

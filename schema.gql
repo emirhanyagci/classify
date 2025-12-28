@@ -24,16 +24,34 @@ type Mutation {
   createClass(input: CreateClassInput!): Class!
   deleteClass(id: Int!): Boolean!
   updateClass(input: UpdateClassInput!): Class!
+  updateUser(input: UpdateUserInput!): User!
 }
 
 type Query {
   class(id: Int!): Class!
   classes: [Class!]!
   myClasses: [Class!]!
+  user: User!
 }
 
 input UpdateClassInput {
   description: String
   id: ID!
   name: String
+}
+
+input UpdateUserInput {
+  email: String
+  imageUrl: String
+  name: String
+  password: String
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  imageUrl: String!
+  name: String!
+  passwordHash: String!
 }
