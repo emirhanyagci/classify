@@ -1,11 +1,12 @@
 "use client"
 
-import { useGetClassesQuery } from "@/graphql/generated/graphql";
+import AddClassModal from "@/components/AddClassModal";
+import { useGetMyClassesLazyQuery, useGetMyClassesQuery } from "@/graphql/generated/graphql";
 import { ClassCard, Loader } from "@classify/ui";
-import { Button, Group, SimpleGrid, Title } from "@mantine/core";
+import { Group, SimpleGrid, Title } from "@mantine/core";
 
 export default function Index() {
-    const { data, loading, error } = useGetClassesQuery();
+    const { data, loading, error } = useGetMyClassesQuery();
 
     console.log(data);
 
@@ -20,10 +21,10 @@ export default function Index() {
         <>
             <Group justify="space-between" mb="md">
                 <Title>Classes</Title>
-                <Button variant="light">+ Add Class</Button>
+                <AddClassModal />
             </Group>
             <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }}>
-                {data?.classes.map((cls) => (
+                {data?.myClasses.map((cls) => (
                     <ClassCard key={cls.id} name={cls.name} description={cls.description} image="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png" badgeText="Badge Text" />
                 ))}
 
