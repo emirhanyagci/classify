@@ -37,8 +37,10 @@ export type Class = {
   createdAt: Scalars['DateTime']['output'];
   description: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  joinCode: Scalars['String']['output'];
   name: Scalars['String']['output'];
   ownerId: Scalars['Float']['output'];
+  publicId: Scalars['String']['output'];
 };
 
 export type CreateClassInput = {
@@ -50,6 +52,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createClass: Class;
   deleteClass: Scalars['Boolean']['output'];
+  regenerateJoinCode: Class;
   updateClass: Class;
   updateUser: User;
 };
@@ -59,6 +62,10 @@ export type MutationCreateClassArgs = {
 };
 
 export type MutationDeleteClassArgs = {
+  id: Scalars['Int']['input'];
+};
+
+export type MutationRegenerateJoinCodeArgs = {
   id: Scalars['Int']['input'];
 };
 
@@ -73,13 +80,18 @@ export type MutationUpdateUserArgs = {
 export type Query = {
   __typename?: 'Query';
   class: Class;
+  classByJoinCode: Class;
   classes: Array<Class>;
   myClasses: Array<Class>;
   user: User;
 };
 
 export type QueryClassArgs = {
-  id: Scalars['Int']['input'];
+  publicId: Scalars['String']['input'];
+};
+
+export type QueryClassByJoinCodeArgs = {
+  joinCode: Scalars['String']['input'];
 };
 
 export type UpdateClassInput = {
@@ -108,6 +120,8 @@ export type User = {
 export type ClassFieldsFragment = {
   __typename?: 'Class';
   id: string;
+  publicId: string;
+  joinCode: string;
   name: string;
   description: string;
   createdAt: string;
@@ -162,6 +176,8 @@ export type GetClassesQuery = {
   classes: Array<{
     __typename?: 'Class';
     id: string;
+    publicId: string;
+    joinCode: string;
     name: string;
     description: string;
     createdAt: string;
@@ -176,6 +192,8 @@ export type GetMyClassesQuery = {
   myClasses: Array<{
     __typename?: 'Class';
     id: string;
+    publicId: string;
+    joinCode: string;
     name: string;
     description: string;
     createdAt: string;
@@ -184,7 +202,7 @@ export type GetMyClassesQuery = {
 };
 
 export type GetClassQueryVariables = Exact<{
-  id: Scalars['Int']['input'];
+  publicId: Scalars['String']['input'];
 }>;
 
 export type GetClassQuery = {
@@ -192,6 +210,26 @@ export type GetClassQuery = {
   class: {
     __typename?: 'Class';
     id: string;
+    publicId: string;
+    joinCode: string;
+    name: string;
+    description: string;
+    createdAt: string;
+    ownerId: number;
+  };
+};
+
+export type GetClassByJoinCodeQueryVariables = Exact<{
+  joinCode: Scalars['String']['input'];
+}>;
+
+export type GetClassByJoinCodeQuery = {
+  __typename?: 'Query';
+  classByJoinCode: {
+    __typename?: 'Class';
+    id: string;
+    publicId: string;
+    joinCode: string;
     name: string;
     description: string;
     createdAt: string;
@@ -216,6 +254,8 @@ export type GetUserQuery = {
 export const ClassFieldsFragmentDoc = gql`
   fragment ClassFields on Class {
     id
+    publicId
+    joinCode
     name
     description
     createdAt
@@ -382,6 +422,8 @@ export const GetClassesDocument = gql`
   query GetClasses {
     classes {
       id
+      publicId
+      joinCode
       name
       description
       createdAt
@@ -473,6 +515,8 @@ export const GetMyClassesDocument = gql`
   query GetMyClasses {
     myClasses {
       id
+      publicId
+      joinCode
       name
       description
       createdAt
@@ -569,9 +613,11 @@ export type GetMyClassesQueryResult = Apollo.QueryResult<
   GetMyClassesQueryVariables
 >;
 export const GetClassDocument = gql`
-  query GetClass($id: Int!) {
-    class(id: $id) {
+  query GetClass($publicId: String!) {
+    class(publicId: $publicId) {
       id
+      publicId
+      joinCode
       name
       description
       createdAt
@@ -592,7 +638,7 @@ export const GetClassDocument = gql`
  * @example
  * const { data, loading, error } = useGetClassQuery({
  *   variables: {
- *      id: // value for 'id'
+ *      publicId: // value for 'publicId'
  *   },
  * });
  */
@@ -657,6 +703,115 @@ export type GetClassSuspenseQueryHookResult = ReturnType<
 export type GetClassQueryResult = Apollo.QueryResult<
   GetClassQuery,
   GetClassQueryVariables
+>;
+export const GetClassByJoinCodeDocument = gql`
+  query GetClassByJoinCode($joinCode: String!) {
+    classByJoinCode(joinCode: $joinCode) {
+      id
+      publicId
+      joinCode
+      name
+      description
+      createdAt
+      ownerId
+    }
+  }
+`;
+
+/**
+ * __useGetClassByJoinCodeQuery__
+ *
+ * To run a query within a React component, call `useGetClassByJoinCodeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetClassByJoinCodeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetClassByJoinCodeQuery({
+ *   variables: {
+ *      joinCode: // value for 'joinCode'
+ *   },
+ * });
+ */
+export function useGetClassByJoinCodeQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    GetClassByJoinCodeQuery,
+    GetClassByJoinCodeQueryVariables
+  > &
+    (
+      | { variables: GetClassByJoinCodeQueryVariables; skip?: boolean }
+      | { skip: boolean }
+    )
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    GetClassByJoinCodeQuery,
+    GetClassByJoinCodeQueryVariables
+  >(GetClassByJoinCodeDocument, options);
+}
+export function useGetClassByJoinCodeLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetClassByJoinCodeQuery,
+    GetClassByJoinCodeQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    GetClassByJoinCodeQuery,
+    GetClassByJoinCodeQueryVariables
+  >(GetClassByJoinCodeDocument, options);
+}
+// @ts-ignore
+export function useGetClassByJoinCodeSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<
+    GetClassByJoinCodeQuery,
+    GetClassByJoinCodeQueryVariables
+  >
+): Apollo.UseSuspenseQueryResult<
+  GetClassByJoinCodeQuery,
+  GetClassByJoinCodeQueryVariables
+>;
+export function useGetClassByJoinCodeSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        GetClassByJoinCodeQuery,
+        GetClassByJoinCodeQueryVariables
+      >
+): Apollo.UseSuspenseQueryResult<
+  GetClassByJoinCodeQuery | undefined,
+  GetClassByJoinCodeQueryVariables
+>;
+export function useGetClassByJoinCodeSuspenseQuery(
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        GetClassByJoinCodeQuery,
+        GetClassByJoinCodeQueryVariables
+      >
+) {
+  const options =
+    baseOptions === Apollo.skipToken
+      ? baseOptions
+      : { ...defaultOptions, ...baseOptions };
+  return Apollo.useSuspenseQuery<
+    GetClassByJoinCodeQuery,
+    GetClassByJoinCodeQueryVariables
+  >(GetClassByJoinCodeDocument, options);
+}
+export type GetClassByJoinCodeQueryHookResult = ReturnType<
+  typeof useGetClassByJoinCodeQuery
+>;
+export type GetClassByJoinCodeLazyQueryHookResult = ReturnType<
+  typeof useGetClassByJoinCodeLazyQuery
+>;
+export type GetClassByJoinCodeSuspenseQueryHookResult = ReturnType<
+  typeof useGetClassByJoinCodeSuspenseQuery
+>;
+export type GetClassByJoinCodeQueryResult = Apollo.QueryResult<
+  GetClassByJoinCodeQuery,
+  GetClassByJoinCodeQueryVariables
 >;
 export const GetUserDocument = gql`
   query GetUser {

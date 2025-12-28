@@ -17,6 +17,12 @@ export class Class {
     id: number;
 
     @Field()
+    publicId: string;
+
+    @Field()
+    joinCode: string;
+
+    @Field()
     name: string;
 
     @Field()

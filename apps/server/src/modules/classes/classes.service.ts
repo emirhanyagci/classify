@@ -2,21 +2,54 @@ import { Inject, Injectable, NotFoundException, ForbiddenException } from '@nest
 import { Pool } from 'pg';
 import { CreateClassInput, UpdateClassInput } from './dto/class.input';
 import { Class } from './models/class.model';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class ClassesService {
     constructor(@Inject('PG_POOL') private readonly pool: Pool) { }
 
+    /**
+     * Generate a URL-safe public ID (12 characters)
+     * Similar to Google Classroom's Base64 encoded ID
+     */
+    private generatePublicId(): string {
+        return randomBytes(9).toString('base64url');
+    }
+
+    /**
+     * Generate a human-friendly join code (8 characters, lowercase alphanumeric)
+     * Easy to read aloud and type
+     */
+    private generateJoinCode(): string {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let code = '';
+        const bytes = randomBytes(8);
+        for (let i = 0; i < 8; i++) {
+            code += chars[bytes[i] % chars.length];
+        }
+        return code;
+    }
+
+    private readonly selectFields = `
+        id, 
+        public_id as "publicId", 
+        join_code as "joinCode", 
+        name, 
+        description, 
+        owner_id as "ownerId", 
+        created_at as "createdAt"
+    `;
+
     async findAll(): Promise<Class[]> {
         const result = await this.pool.query(
-            'SELECT id, name, description, owner_id as "ownerId", created_at as "createdAt" FROM classes ORDER BY created_at DESC'
+            `SELECT ${this.selectFields} FROM classes ORDER BY created_at DESC`
         );
         return result.rows;
     }
 
     async findById(id: number): Promise<Class> {
         const result = await this.pool.query(
-            'SELECT id, name, description, owner_id as "ownerId", created_at as "createdAt" FROM classes WHERE id = $1',
+            `SELECT ${this.selectFields} FROM classes WHERE id = $1`,
             [id]
         );
 
@@ -27,18 +60,49 @@ export class ClassesService {
         return result.rows[0];
     }
 
+    async findByPublicId(publicId: string): Promise<Class> {
+        const result = await this.pool.query(
+            `SELECT ${this.selectFields} FROM classes WHERE public_id = $1`,
+            [publicId]
+        );
+
+        if (!result.rows[0]) {
+            throw new NotFoundException(`Class not found`);
+        }
+
+        return result.rows[0];
+    }
+
+    async findByJoinCode(joinCode: string): Promise<Class> {
+        const result = await this.pool.query(
+            `SELECT ${this.selectFields} FROM classes WHERE join_code = $1`,
+            [joinCode.toLowerCase()]
+        );
+
+        if (!result.rows[0]) {
+            throw new NotFoundException(`Class with join code ${joinCode} not found`);
+        }
+
+        return result.rows[0];
+    }
+
     async findByOwner(ownerId: number): Promise<Class[]> {
         const result = await this.pool.query(
-            'SELECT id, name, description, owner_id as "ownerId", created_at as "createdAt" FROM classes WHERE owner_id = $1 ORDER BY created_at DESC',
+            `SELECT ${this.selectFields} FROM classes WHERE owner_id = $1 ORDER BY created_at DESC`,
             [ownerId]
         );
         return result.rows;
     }
 
     async create(input: CreateClassInput, ownerId: number): Promise<Class> {
+        const publicId = this.generatePublicId();
+        const joinCode = this.generateJoinCode();
+
         const result = await this.pool.query(
-            'INSERT INTO classes (name, description, owner_id) VALUES ($1, $2, $3) RETURNING id, name, description, owner_id as "ownerId", created_at as "createdAt"',
-            [input.name, input.description, ownerId]
+            `INSERT INTO classes (name, description, owner_id, public_id, join_code) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING ${this.selectFields}`,
+            [input.name, input.description, ownerId, publicId, joinCode]
         );
         return result.rows[0];
     }
@@ -71,8 +135,25 @@ export class ClassesService {
         values.push(input.id);
 
         const result = await this.pool.query(
-            `UPDATE classes SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING id, name, description, owner_id as "ownerId", created_at as "createdAt"`,
+            `UPDATE classes SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING ${this.selectFields}`,
             values
+        );
+
+        return result.rows[0];
+    }
+
+    async regenerateJoinCode(id: number, userId: number): Promise<Class> {
+        const existing = await this.findById(id);
+
+        if (existing.ownerId !== userId) {
+            throw new ForbiddenException('You can only regenerate join codes for your own classes');
+        }
+
+        const newJoinCode = this.generateJoinCode();
+
+        const result = await this.pool.query(
+            `UPDATE classes SET join_code = $1 WHERE id = $2 RETURNING ${this.selectFields}`,
+            [newJoinCode, id]
         );
 
         return result.rows[0];

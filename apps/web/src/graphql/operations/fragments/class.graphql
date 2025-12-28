@@ -2,9 +2,10 @@
 
 fragment ClassFields on Class {
   id
+  publicId
+  joinCode
   name
   description
   createdAt
   ownerId
 }
-

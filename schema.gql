@@ -6,8 +6,10 @@ type Class {
   createdAt: DateTime!
   description: String!
   id: ID!
+  joinCode: String!
   name: String!
   ownerId: Float!
+  publicId: String!
 }
 
 input CreateClassInput {
@@ -23,12 +25,14 @@ scalar DateTime
 type Mutation {
   createClass(input: CreateClassInput!): Class!
   deleteClass(id: Int!): Boolean!
+  regenerateJoinCode(id: Int!): Class!
   updateClass(input: UpdateClassInput!): Class!
   updateUser(input: UpdateUserInput!): User!
 }
 
 type Query {
-  class(id: Int!): Class!
+  class(publicId: String!): Class!
+  classByJoinCode(joinCode: String!): Class!
   classes: [Class!]!
   myClasses: [Class!]!
   user: User!

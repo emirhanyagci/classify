@@ -1,7 +1,7 @@
 "use client"
 
-import AddClassModal from "@/components/AddClassModal";
-import { useGetMyClassesLazyQuery, useGetMyClassesQuery } from "@/graphql/generated/graphql";
+import { AddClassModal } from "./[id]/_components";
+import { useGetMyClassesQuery } from "@/graphql/generated/graphql";
 import { ClassCard, Loader } from "@classify/ui";
 import { Group, SimpleGrid, Title } from "@mantine/core";
 
@@ -25,9 +25,8 @@ export default function Index() {
             </Group>
             <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }}>
                 {data?.myClasses.map((cls) => (
-                    <ClassCard key={cls.id} name={cls.name} description={cls.description} image="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png" badgeText="Badge Text" />
+                    <ClassCard key={cls.id} publicId={cls.publicId} name={cls.name} description={cls.description} image="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png" />
                 ))}
-
             </SimpleGrid>
         </>
     );

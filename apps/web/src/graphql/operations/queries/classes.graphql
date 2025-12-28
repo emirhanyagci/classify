@@ -3,6 +3,8 @@
 query GetClasses {
   classes {
     id
+    publicId
+    joinCode
     name
     description
     createdAt
@@ -13,6 +15,8 @@ query GetClasses {
 query GetMyClasses {
   myClasses {
     id
+    publicId
+    joinCode
     name
     description
     createdAt
@@ -20,9 +24,23 @@ query GetMyClasses {
   }
 }
 
-query GetClass($id: Int!) {
-  class(id: $id) {
+query GetClass($publicId: String!) {
+  class(publicId: $publicId) {
     id
+    publicId
+    joinCode
+    name
+    description
+    createdAt
+    ownerId
+  }
+}
+
+query GetClassByJoinCode($joinCode: String!) {
+  classByJoinCode(joinCode: $joinCode) {
+    id
+    publicId
+    joinCode
     name
     description
     createdAt

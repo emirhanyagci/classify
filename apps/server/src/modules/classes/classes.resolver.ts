@@ -15,10 +15,17 @@ export class ClassesResolver {
     findAll(): Promise<Class[]> {
         return this.classesService.findAll();
     }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => Class, { name: 'class' })
-    findOne(@Args('id', { type: () => Int }) id: number): Promise<Class> {
-        return this.classesService.findById(id);
+    findOne(@Args('publicId', { type: () => String }) publicId: string): Promise<Class> {
+        return this.classesService.findByPublicId(publicId);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => Class, { name: 'classByJoinCode' })
+    findByJoinCode(@Args('joinCode', { type: () => String }) joinCode: string): Promise<Class> {
+        return this.classesService.findByJoinCode(joinCode);
     }
 
     @Query(() => [Class], { name: 'myClasses' })
@@ -43,6 +50,15 @@ export class ClassesResolver {
         @CurrentUser() user: { userId: number }
     ): Promise<Class> {
         return this.classesService.update(input, user.userId);
+    }
+
+    @Mutation(() => Class)
+    @UseGuards(GqlAuthGuard)
+    regenerateJoinCode(
+        @Args('id', { type: () => Int }) id: number,
+        @CurrentUser() user: { userId: number }
+    ): Promise<Class> {
+        return this.classesService.regenerateJoinCode(id, user.userId);
     }
 
     @Mutation(() => Boolean)
