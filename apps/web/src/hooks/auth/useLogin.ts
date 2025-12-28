@@ -1,15 +1,16 @@
 "use client";
 import { useUser } from "@/contexts/UserContext";
+import { useGetUserLazyQuery } from "@/graphql";
 import { login } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function useLogin() {
     const router = useRouter();
-    const { setUser, setLoading } = useUser();
+    const { setUser, setLoading, setAccessToken } = useUser();
     const [error, setError] = useState<Error | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [getUser] = useGetUserLazyQuery();
     const loginMutation = async (email: string, password: string) => {
         setIsLoading(true);
         setLoading(true);
@@ -17,10 +18,12 @@ export function useLogin() {
 
         try {
             const response = await login(email, password);
-            const { accessToken, ...userData } = response.data;
+            const { accessToken } = response.data;
 
             if (accessToken) {
-                setUser({ ...userData, accessToken });
+                setAccessToken(accessToken);
+                const { data } = await getUser();
+                setUser(data?.user);
                 router.push("/dashboard");
             }
 

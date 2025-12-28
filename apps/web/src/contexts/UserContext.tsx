@@ -4,40 +4,46 @@ import React, { createContext, useContext, useState, ReactNode, Dispatch, SetSta
 import { User } from '@classify/common';
 import { refreshAccessToken } from '@/services/auth.service';
 import { setAccessTokenGetter } from '@/lib/apollo-client';
+import { setAccessTokenGetter as setAxiosAccessTokenGetter } from '@/lib/axios';
+import { useGetUserLazyQuery } from '@/graphql';
 
 // Allow partial user fields so we can store tokens before full profile is loaded.
-type AuthUser = Partial<User>;
+type UserPartial = Partial<User>;
 
 interface UserContextType {
-  user: AuthUser | null;
+  user: UserPartial | null;
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
-  setUser: (user: AuthUser) => void;
+  setUser: (user: UserPartial | null | undefined) => void;
   setAccessToken: (accessToken: string) => void;
+  setImageUrl: (imageUrl: string) => void;
   logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [getUser] = useGetUserLazyQuery();
+
+
+  const [user, setUser] = useState<UserPartial | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const userRef = useRef<AuthUser | null>(null);
+  const accessTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
-    userRef.current = user;
-  }, [user]);
-
-  useEffect(() => {
-    setAccessTokenGetter(() => userRef.current?.accessToken ?? null);
+    const getter = () => accessTokenRef.current;
+    setAccessTokenGetter(getter);
+    setAxiosAccessTokenGetter(getter);
   }, []);
 
   useEffect(() => {
     const initAuth = async () => {
       try {
         const response = await refreshAccessToken();
-        const { accessToken, ...userData } = response.data;
-        setUser((prev) => ({ ...(prev ?? {}), accessToken, ...userData }));
+        const { accessToken } = response.data;
+        updateAccessToken(accessToken);
+        const { data } = await getUser();
+        updateUser(data?.user);
       } catch {
         setUser(null);
       } finally {
@@ -48,15 +54,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
-  const setAccessToken = (accessToken: string) => {
-    setUser((prev) => ({ ...(prev ?? {}), accessToken }))
-  }
-  const logout = () => {
-    setUser(null);
+  const updateUser = (newUser: UserPartial | null | undefined) => {
+    if (newUser?.accessToken) {
+      accessTokenRef.current = newUser.accessToken;
+    }
+    setUser(newUser ?? null);
   };
 
+  const updateAccessToken = (accessToken: string) => {
+    accessTokenRef.current = accessToken;
+    setUser((prev) => ({ ...(prev ?? {}), accessToken }));
+  };
 
+  const updateImageUrl = (imageUrl: string) => {
+    setUser((prev) => ({ ...(prev ?? {}), imageUrl }));
+  };
 
+  const logout = () => {
+    accessTokenRef.current = null;
+    setUser(null);
+  };
 
   return (
     <UserContext.Provider
@@ -64,8 +81,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         setLoading,
-        setUser,
-        setAccessToken,
+        setUser: updateUser,
+        setAccessToken: updateAccessToken,
+        setImageUrl: updateImageUrl,
         logout,
       }}
     >
